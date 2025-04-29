@@ -17,7 +17,7 @@ class SVD {
     inline const Matrix * get_u() { return u; }
     inline const Matrix * get_v() { return v; }
     inline const Matrix get_vt() { return v->transpose(); }
-    const Matrix get_w();
+    const SquareMatrix* get_w();
     int rank();
     int nullity();
     Matrix range();
