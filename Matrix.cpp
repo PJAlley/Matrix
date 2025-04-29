@@ -363,13 +363,8 @@ Matrix operator*(double a, const Matrix & b) {
 
 
 Matrix operator*(Matrix & a, Matrix & b) {
-  if (a.cols() != b.rows() && a.rows() != b.cols()) throw std::logic_error("Columns and rows do not match");
-  bool swapped = false;
-  if (a.rows() == b.cols() && a.cols() != b.rows()) {
-    swapped = true;
-    a.swap(b);
-  }
-  
+  if (a.cols() != b.rows()) throw std::logic_error("Columns and rows do not match");
+
   Matrix c(a.rows(), b.cols());
   for (int i = 0; i < a.rows(); ++i) {
     for (int j = 0; j < b.cols(); ++j) {
@@ -378,10 +373,6 @@ Matrix operator*(Matrix & a, Matrix & b) {
       }
       if (std::fabs(c(i, j)) < TINY) c(i, j) = 0;
     }
-  }
-
-  if(swapped) {
-    a.swap(b);
   }
 
   return c;
