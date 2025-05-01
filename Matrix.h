@@ -1,10 +1,8 @@
 #pragma once
 
-class SquareMatrix;
 class ColumnVector;
 
 class Matrix {
-  friend class SquareMatrix;
   public:
     Matrix();
     Matrix(int, int);

@@ -127,7 +127,7 @@ int main() {
   SVD svd(sm);
   try {
     std::cout << "U(sb):" << std::endl << *(svd.get_u());
-    std::cout << "W(sb):" << std::endl << *(svd.get_w());
+    std::cout << "W(sb):" << std::endl << svd.get_w();
     std::cout << "V(sb):" << std::endl << *(svd.get_v());
   }
   catch(std::exception& e) {
@@ -140,10 +140,10 @@ int main() {
   SVD svdm(sv);
   try {
     std::cout << "U(sv):" << std::endl << *(svdm.get_u());
-    std::cout << "W(sv):" << std::endl << *(svdm.get_w());
+    std::cout << "W(sv):" << std::endl << svdm.get_w();
     std::cout << "V(sv):" << std::endl << *(svdm.get_v());
     //svdm.printW();
-    Matrix ds = (*(svdm.get_u()) * *(svdm.get_w())) * svdm.get_vt();
+    Matrix ds = (*(svdm.get_u()) * svdm.get_w()) * svdm.get_vt();
     std::cout << "ds:" << std::endl << ds;
   }
   catch(std::exception& e) {

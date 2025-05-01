@@ -11,14 +11,13 @@ class SquareMatrix : public Matrix {
     SquareMatrix();
     SquareMatrix(int);
     SquareMatrix(const Matrix&);
-    SquareMatrix(Matrix&&);
     SquareMatrix(const SquareMatrix&);
     SquareMatrix(SquareMatrix&&);
     SquareMatrix& operator=(const SquareMatrix&);
     SquareMatrix& operator=(const Matrix&);
     SquareMatrix& operator=(SquareMatrix&&);
     inline const int sides() const { return side; }
-    const SquareMatrix& get_inverse();
+    SquareMatrix get_inverse();
     virtual ~SquareMatrix();
     double get_determinant();
     double get_trace();
@@ -34,7 +33,6 @@ class SquareMatrix : public Matrix {
     int side;
   private:
     double trace;
-    SquareMatrix * inverse;
     std::vector<double> coeffs;   // Characteristic Polynomial Coefficients.
     std::vector<std::complex<double>> eigenvalues;
     void char_poly();
