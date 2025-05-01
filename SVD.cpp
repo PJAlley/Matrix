@@ -65,10 +65,10 @@ void SVD::printW() const {
   std::cout << " ]" << std::endl;
 }
 
-const SquareMatrix* SVD::get_w() {
-  SquareMatrix* wm = new SquareMatrix(w.size());
-  for (int i = 0; i < wm->sides(); i++) {
-    wm->at(i, i) = w[i];
+const SquareMatrix SVD::get_w() {
+  SquareMatrix wm(w.size());
+  for (int i = 0; i < wm.sides(); i++) {
+    wm(i, i) = w[i];
   }
   return wm;
 }

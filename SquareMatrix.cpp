@@ -17,9 +17,9 @@ static const double NaN = std::nan("1");
 
 static const double TINY = std::numeric_limits<double>::epsilon();
 
-SquareMatrix::SquareMatrix() : Matrix(), side(0), trace(NaN), inverse(nullptr), coeffs(1), eigenvalues(0) { }
+SquareMatrix::SquareMatrix() : Matrix(), side(0), trace(NaN), coeffs(1), eigenvalues(0) { }
 
-SquareMatrix::SquareMatrix(int s) : Matrix(s, s), side(s), trace(NaN), inverse(nullptr), coeffs(s + 1), eigenvalues(s) { }
+SquareMatrix::SquareMatrix(int s) : Matrix(s, s), side(s), trace(NaN), coeffs(s + 1), eigenvalues(s) { }
 
 SquareMatrix::SquareMatrix(const SquareMatrix & s) : Matrix(s.side, s.side) {
   for(int i = 0; i < row; ++i) {
@@ -29,10 +29,6 @@ SquareMatrix::SquareMatrix(const SquareMatrix & s) : Matrix(s.side, s.side) {
   }
   side = s.side;
   trace = s.trace;
-  inverse = nullptr;
-  if(s.inverse) {
-    inverse = new SquareMatrix(*s.inverse);
-  }
   coeffs = s.coeffs;
   eigenvalues = s.eigenvalues;
 }
@@ -46,7 +42,6 @@ SquareMatrix::SquareMatrix(const Matrix & s) : Matrix(s.rows(), s.cols()), coeff
   }
   side = row;
   trace = NaN;
-  inverse = nullptr;
 }
 
 SquareMatrix::SquareMatrix(SquareMatrix && s) {
@@ -55,29 +50,14 @@ SquareMatrix::SquareMatrix(SquareMatrix && s) {
   row = s.row;
   col = s.col;
   trace = s.trace;
-  inverse = s.inverse;
   coeffs = s.coeffs;
   eigenvalues = s.eigenvalues;
 
   s.matrix = nullptr;
-  s.inverse = nullptr;
   s.side = s.row = s.col = 0;
   s.trace = NaN;
   s.coeffs.clear();
   s.eigenvalues.clear();
-}
-
-SquareMatrix::SquareMatrix(Matrix && s) : coeffs(s.rows() + 1), eigenvalues(s.rows()) {
-  if (s.rows() != s.cols()) throw std::runtime_error("Rows and columns must be equal to convert");
-  matrix = std::move(s.matrix);
-  side = s.rows();
-  row = std::move(s.rows());
-  col = std::move(s.cols());
-  trace = NaN;
-  inverse = nullptr;
-
-  s.matrix = nullptr;
-  s.row = s.col = 0;
 }
 
 SquareMatrix& SquareMatrix::operator=(const SquareMatrix & s) {
@@ -98,10 +78,6 @@ SquareMatrix& SquareMatrix::operator=(const SquareMatrix & s) {
       matrix[i][j] = s.matrix[i][j];
     }
   }
-  inverse = nullptr;
-  if(s.inverse) {
-    inverse = new SquareMatrix(*s.inverse);
-  }
   coeffs = s.coeffs;
   eigenvalues = s.eigenvalues;
   return *this;
@@ -116,13 +92,11 @@ SquareMatrix& SquareMatrix::operator=(SquareMatrix && s) {
   row = s.row;
   col = s.col;
   matrix = s.matrix;
-  inverse = s.inverse;
   coeffs = s.coeffs;
   eigenvalues = s.eigenvalues;
   s.side = s.row = s.col = 0;
   s.trace = NaN;
   s.matrix = nullptr;
-  s.inverse = nullptr;
   s.coeffs.clear();
   s.eigenvalues.clear();
   return *this;
@@ -137,7 +111,6 @@ SquareMatrix& SquareMatrix::operator=(const Matrix & s) {
   trace = NaN;
   row = side;
   col = side;
-  inverse = nullptr;
   coeffs.resize(side + 1);
   eigenvalues.resize(side);
   matrix = new double * [row];
@@ -154,7 +127,6 @@ SquareMatrix& SquareMatrix::operator=(const Matrix & s) {
 }
 
 SquareMatrix::~SquareMatrix() {
-  if (inverse) delete inverse;
   trace = NaN;
   side = 0;
 }
@@ -170,12 +142,10 @@ double SquareMatrix::get_trace() {
   return -coeffs[coeffs.size() - 2];
 }
 
-const SquareMatrix& SquareMatrix::get_inverse() {
+SquareMatrix SquareMatrix::get_inverse() {
   if(!get_determinant()) throw std::logic_error("Cannot compute inverse");
-
-  if(inverse != nullptr) delete inverse;
   
-  inverse = new SquareMatrix(*this);
+  SquareMatrix inverse = *this;
   
   std::vector<int> indxc(side);
   std::vector<int> indxr(side);
@@ -190,8 +160,8 @@ const SquareMatrix& SquareMatrix::get_inverse() {
       if (ipiv[j] != 1) {
         for (auto k = 0; k < side; k++) {
           if (ipiv[k] == 0) {
-            if (std::abs(inverse->at(j, k)) >= big) {
-              big = std::abs(inverse->at(j, k));
+            if (std::abs(inverse(j, k)) >= big) {
+              big = std::abs(inverse(j, k));
               irow = j;
               icol = k;
             }
@@ -202,22 +172,22 @@ const SquareMatrix& SquareMatrix::get_inverse() {
     ++(ipiv[icol]);
     // Found the pivot element. Put the row with the pivot in its diagonal column.
     if (irow != icol) {
-      inverse->swapRows(irow, icol);
+      inverse.swapRows(irow, icol);
     }
     indxr[i] = irow;
     indxc[i] = icol;
  
      //Divide the pivot row by the pivot element.
-    double pivinv = 1.0 / inverse->at(icol, icol);
-    inverse->at(icol, icol) = 1.0;
-    for (auto l = 0; l < side; l++) inverse->at(icol, l) *= pivinv;
+    double pivinv = 1.0 / inverse(icol, icol);
+    inverse(icol, icol) = 1.0;
+    for (auto l = 0; l < side; l++) inverse(icol, l) *= pivinv;
 
     // Now, reduce the rows, except for the pivot one.
     for (auto ll = 0; ll < side; ll++) {
       if (ll != icol) {
-        double dum = inverse->at(ll, icol);
-        inverse->at(ll, icol) = 0.0;
-        for (auto l = 0; l < side; l++) inverse->at(ll, l) -= inverse->at(icol, l) * dum;
+        double dum = inverse(ll, icol);
+        inverse(ll, icol) = 0.0;
+        for (auto l = 0; l < side; l++) inverse(ll, l) -= inverse(icol, l) * dum;
       }
     }
   }
@@ -225,10 +195,10 @@ const SquareMatrix& SquareMatrix::get_inverse() {
   // Unscramble.
   for (int l = side - 1; l >= 0; l--) {
     if (indxr[l] != indxc[l]) {
-      inverse->swapColumns(indxr[l], indxc[l]);
+      inverse.swapColumns(indxr[l], indxc[l]);
     }
   }
-  return *inverse;
+  return inverse;
 }
 
 SquareMatrix operator/(SquareMatrix& a, SquareMatrix& b) {
