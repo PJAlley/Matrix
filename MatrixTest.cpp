@@ -183,5 +183,11 @@ int main() {
   Matrix scross = outerProduct(colvec, rv3);
   std::cout << "scross:" << std::endl << scross;
 
+  Matrix m(3, 4);
+  load_random_values(m);
+  std::cout << "m:" << std::endl << m;
+  m.reducedRowEchelonForm();
+  std::cout << "m:" << std::endl << m;
+
   return 0;
 }

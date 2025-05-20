@@ -175,20 +175,15 @@ void Matrix::reducedRowEchelonForm() {
       double div = rm[lead];
       rm /= div;
     }
+    
     for(int k = 0; k < row; k++){
       if (k != r) {
         double mult = matrix[k][lead];
         MatrixRow km(*this, k);
-        km -= rm * mult;
+        km -= (rm * mult);
       }
     }
     lead++;
-    for (int i = 0; i < row; i++) {
-      for (int j = 0; j < col; j++) {
-        if (std::fabs(matrix[i][j]) < TINY)
-          matrix[i][j] = 0;    
-      }
-    }
   }
 }
 

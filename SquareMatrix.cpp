@@ -15,7 +15,7 @@
 
 static const double NaN = std::nan("1");
 
-static const double TINY = std::numeric_limits<double>::epsilon();
+static const double TINY = std::pow(10, -10);
 
 SquareMatrix::SquareMatrix() : Matrix(), side(0), trace(NaN), coeffs(1), eigenvalues(0) { }
 
